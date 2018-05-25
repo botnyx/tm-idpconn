@@ -5,6 +5,7 @@ namespace botnyx\tm_idpcomm;
 
 error_log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
+die("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 class idpcomm {
 
