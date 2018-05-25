@@ -1,0 +1,8 @@
+{
+    "name": "botnyx/tm_idpconn",
+    "autoload": {
+        "psr-0" : {
+            "botnyx\\tm_idpconn" : "src"
+        }
+    }
+}
