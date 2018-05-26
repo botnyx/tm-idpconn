@@ -1,5 +1,5 @@
 {
-    "name": "botnyx/tmidpconn",
+    "name": "botnyx/tm-idpconn",
     "autoload": {
         "psr-4" : {
             "botnyx\\tmidpconn\\" : "src"
