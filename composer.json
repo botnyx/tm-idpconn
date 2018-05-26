@@ -1,8 +1,8 @@
 {
-    "name": "botnyx/tm_idpconn",
+    "name": "botnyx/tmidpconn",
     "autoload": {
         "psr-0" : {
-            "botnyx\\tm_idpconn" : "src"
+            "botnyx\\tmidpconn\\" : "src"
         }
     },
     "require": {
