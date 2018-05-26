@@ -1,11 +1,11 @@
 <?php
 
 
-namespace botnyx\tmidpcomm;
+namespace botnyx\tmidpconn;
 
 
 
-class idpcomm {
+class idpconn {
 
 	var $client_id;
 	var $client_secret;
