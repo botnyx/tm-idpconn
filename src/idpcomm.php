@@ -1,9 +1,8 @@
 <?php
 
 
-namespace botnyx\tm_idpcomm;
+namespace botnyx\tmidpcomm;
 
-error_log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 
 class idpcomm {
