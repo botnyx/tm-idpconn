@@ -37,7 +37,11 @@ class idpconn {
 
 
 	}
-
+	
+	public function setLogger($logger){
+		$this->logger=$log;
+	}
+	
 	private function createClient(){
 		$this->client = new \GuzzleHttp\Client([
 			// Base URI is used with relative requests
@@ -148,5 +152,35 @@ class idpconn {
 	}
 
 
+	public function oauthLogin($user,$pass){
+		// grant_type=password
+		// client_id
+		
+		// username
+		// password
+		$client = new \GuzzleHttp\Client();
+		$response = $client->request('POST', $this->idpServer.'/token', [
+			'timeout' => 5,
+			'http_errors' => false,
+			'auth' => [$this->client_id, $this->client_secret],
+			'form_params' => [
+				'grant_type' => 'password',
+				'username' => $user,
+				'password' => $pass
+			]
+		]);
+		
+		
+		#print_r($response->getStatusCode());
+		$resp =	json_decode($response->getBody()->getContents(),true);
+		
+		#print_r($resp);
+		#die();
+		
+		$status = array('code'=>$response->getStatusCode() , 'data'=>$resp);
+		return $status;
+		
+		
+	}
 
 }
