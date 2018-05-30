@@ -116,6 +116,7 @@ class idpconn {
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
 	}
 	public function post($path,$json=array()){
+		error_log("idpconn->post()");
 		$options = ['json' => $json];
 		$response = $this->call('POST',$path,$options);
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
@@ -127,17 +128,23 @@ class idpconn {
 	}
 
 	private function call($type='GET',$path,$options){
-
+		error_log("idpconn->call($type)");
 		$response = $this->client->request(strtoupper($type), $this->idpServer.$path,$options);
+		
+		error_log( "this->client->request(".strtoupper($type).", ".$this->idpServer.$path.",".json_encode($options).")");
+				  
 		if($response->getStatusCode()==500){
-			throw new \Exception("500 IDP Server error");
+			return $response;
+			//error_log($response->getBody()->getContents());
+			//throw new \Exception($response->getBody()->getContents());
 	   	}
 		#error_log($response->getStatusCode()." call(".$type.",".$path.")");
 		$tt = $response->getBody()->getContents();
 		#error_log(">>".$tt);
 		$responseJson = json_decode($tt ,true);
 		if(array_key_exists('error_description',$responseJson) && $responseJson['error_description']=="The access token provided has expired" ){
-		#if($responseJson['error_description']=="The access token provided has expired"){
+		
+			#if($responseJson['error_description']=="The access token provided has expired"){
 			$tokenstruct = $this->requestToken();
 			$this->writeToken(json_encode($tokenstruct) );
 			$this->accessToken=$tokenstruct['access_token'];
@@ -146,7 +153,8 @@ class idpconn {
 
 		$response = $this->client->request(strtoupper($type), $this->idpServer.$path,$options);
 		if($response->getStatusCode()==500){
-			throw new Exception("500 IDP Server error");
+			//error_log($response->getBody()->getContents());
+			//throw new \Exception($response->getBody()->getContents());
 	   	}
 		return $response;
 	}
