@@ -21,14 +21,14 @@ class idpconn {
 
 
 		// read the token, or fetch it.
-		//if(file_exists("../idpComm.token")){
+		if(file_exists("../idpComm.token")){
 			//error_log('idpComm.token exists()');
-		//	$tokenData=json_decode($this->readToken(),true);
-		//	error_log("Using cached token");
-		//}else{
+			$tokenData=json_decode($this->readToken(),true);
+			error_log("Using cached token");
+		}else{
 			$tokenData=$this->requestToken();
-			//$this->writeToken(json_encode($tokenData));
-		//}
+			$this->writeToken(json_encode($tokenData));
+		}
 
 		// set the accesstoken var.
 		$this->accessToken=$tokenData['access_token'];
@@ -52,6 +52,7 @@ class idpconn {
 				'Accept'     => 'application/json',
 				'Authorization'=> 'Bearer '.$this->accessToken
 			],
+			'debug' => false,
 			'connect_timeout' => 3.14,
 			'timeout' => 3.14,
 			'allow_redirects'=>[
@@ -139,8 +140,8 @@ class idpconn {
 			//throw new \Exception($response->getBody()->getContents());
 	   	}
 		#error_log($response->getStatusCode()." call(".$type.",".$path.")");
-		$tt = $response->getBody()->getContents();
-		#error_log(">>".$tt);
+		$tt = $response->getBody()->getContents($response->getHeaderLine('Content-Length'));
+		error_log(">>".$tt);
 		$responseJson = json_decode($tt ,true);
 		if(array_key_exists('error_description',$responseJson) && $responseJson['error_description']=="The access token provided has expired" ){
 		
