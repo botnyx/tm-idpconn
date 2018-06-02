@@ -1,13 +1,12 @@
 {
     "name": "botnyx/tm-idpconn",
-	"description": "none",
     "autoload": {
         "psr-4" : {
             "botnyx\\tmidpconn\\" : "src"
         }
     },
     "require": {
-      "php": ">=7.0",
-      "guzzlehttp/guzzle": "^6.2"
+       "php": ">=7.0",
+       "guzzlehttp/guzzle": "^6.2"
     }
 }
