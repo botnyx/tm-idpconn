@@ -6,7 +6,12 @@ namespace botnyx\tmidpconn;
 
 
 class idpconn {
-
+	
+	
+	var $authorize_endpoint = "/authorize";
+	var $token_endpoint		= "/token";
+	
+	
 	var $client_id;
 	var $client_secret;
 
@@ -73,7 +78,8 @@ class idpconn {
 		// username
 		// password
 		$client = new \GuzzleHttp\Client();
-		$response = $client->request('POST', $this->idpServer.'/token', [
+		#echo "<pre>";
+		$options = [
 			'timeout' => 5,
 			'http_errors' => false,
 			'auth' => [$this->client_id, $this->client_secret],
@@ -82,7 +88,10 @@ class idpconn {
 				'username' => $user,
 				'password' => $pass
 			]
-		]);
+		];
+		#print_r($options);
+		#echo "<pre>";
+		$response = $client->request('POST', $this->idpServer.$this->token_endpoint, $options);
 		
 		
 		#print_r($response->getStatusCode());
@@ -98,9 +107,107 @@ class idpconn {
 	}	
 
 	
+	public function OLDSHIT($authorized,$client_id,$user_id){
+		#if($this->debug) {
+		//	error_log("receiveCode(): Exchange code for token");
+		#	echo " cookiemanager->receiveAuthCode($code)";
+		#}
+		echo "<pre>";
+		#var_dump($this->client_id);
+		#var_dump($this->client_secret);
+		$this->server= "https://idp.trustmaster.nl";
+		var_dump($this->server);
+		#var_dump($code);
+		
+		$idp = new \botnyx\tmidpconn\idpconn($this->server,$this->client_id,$this->client_secret);
+		
+		
+		$result = $idp->receiveAuthCode($code );
+		#var_dump($result);
+		if($result['code']!=200){
+			var_dump($result);
+			#$result['code'];
+			#$result['data']['error'];
+			#$result['data']['error_description'];
+			return false;
+		}else{
+			
+			
+			if( $this->verifyJWT($result['data']['access_token'])){
+				// jwt is ok, setcookie.
+				if($this->debug) error_log("JWT validated, setcookies! ");
+
+				$this->setNewCookies($result['data']);
+				#print_r($result);
+				#print_r($this->payload);
+				#die();
+				return true;
+			}else{
+				// jwt decoding failed!
+				return false;
+			}
+			
+			
+			#$result['code'];
+			#$result['data']['access_token'];
+			#$result['data']['expires_in'];		
+			#$result['data']['token_type'];		
+			#$result['data']['scope'];		
+			#$result['data']['refresh_token'];		
+		}
+		
+		
+		
+		
+		
+	}
 	
 	
 	
+	public function receiveAuthCode($authorized,$client_id,$user_id){
+		
+		
+		//POST=>
+		// https://idp.trustmaster.nl/authorize?response_type=code&client_id=jerryhopper.com&state=1528031546&user_id=1234
+		$state = time();
+		
+		$url = $this->idpServer.$this->authorize_endpoint."?response_type=code&client_id=".$client_id."&state=".$state."&user_id=".$user_id;
+		echo "receiveAuthCode posts :\n";
+		echo $url."\n";
+		$client = new \GuzzleHttp\Client();
+		#echo "<pre>";
+		$options = [
+			'timeout' => 5,
+			'http_errors' => false,
+			'form_params' => [
+				'authorized' => $authorized
+			],
+			'allow_redirects' => false,
+			'headers' => [
+        		'User-Agent' => 'trustmaster/1.0',
+				'Accept'     => 'application/json',
+				'Authorization'=> 'Bearer '.$this->accessToken
+			],
+		];
+		
+		#print_r($options);
+		#echo "<pre>";
+		$response = $client->request('POST', $url , $options);
+		
+		
+		if($response->getStatusCode()==302){
+			
+			
+			
+			$result_array['url']=$response->getHeader('Location')[0];
+			
+			$status = array('code'=>$response->getStatusCode(),"data"=>$result_array);
+		}else{
+			$status = array('code'=>$response->getStatusCode(),"data"=>json_decode($response->getBody()->getContents()));
+			
+		}
+		return $status;		
+	}
 	
 	
 	
@@ -137,6 +244,7 @@ class idpconn {
 		$contents = fwrite($handle, $data);
 		fclose($handle);
 	}
+	
 	private function readToken(){
 		// get contents of a file into a string
 		$filename = "../idpComm.token";
@@ -184,18 +292,21 @@ class idpconn {
 		$response = $this->call('GET',$path,$options);
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
 	}
+	
 	public function post($path,$json=array()){
 		error_log("idpconn->post()");
 		$options = ['json' => $json];
 		$response = $this->call('POST',$path,$options);
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
 	}
+	
 	public function put($path,$json=array()){
 		$options = ['json' => $json];
 		$response = $this->call('PUT',$path,$options);
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
 	}
 
+	
 	private function call($type='GET',$path,$options){
 		error_log("idpconn->call($type)");
 		$response = $this->client->request(strtoupper($type), $this->idpServer.$path,$options);
