@@ -57,6 +57,9 @@ class idpconn {
 			'form_params' => [
 				'grant_type' => 'refresh_token',
 				'refresh_token' => $rt
+			],
+			'headers' => [
+        		'User-Agent' => 'trustmaster/1.0'
 			]
 		]);
 		
@@ -83,6 +86,9 @@ class idpconn {
 			'timeout' => 5,
 			'http_errors' => false,
 			'auth' => [$this->client_id, $this->client_secret],
+			'headers' => [
+        		'User-Agent' => 'trustmaster/1.0'
+			],
 			'form_params' => [
 				'grant_type' => 'password',
 				'username' => $user,
@@ -178,6 +184,7 @@ class idpconn {
 		#echo "<pre>";
 		$options = [
 			'timeout' => 5,
+			
 			'http_errors' => false,
 			'form_params' => [
 				'authorized' => $authorized
@@ -209,7 +216,7 @@ class idpconn {
 		return $status;		
 	}
 	
-	
+		
 	public function exchangeAuthCode($code){
 		// Exchange a received auth code for a token.
 		//curl -u TestClient:TestSecret https://api.mysite.com/token -d 'grant_type=authorization_code&code=xyz'
@@ -217,17 +224,27 @@ class idpconn {
 		#echo "<pre>";
 		$options = [
 			'timeout' => 5,
+			'debug' => false,
 			'http_errors' => false,
 			'auth' => [$this->client_id, $this->client_secret],
 			'form_params' => [
 				'grant_type' => 'authorization_code',
 				'code' =>$code
+			],
+			'headers' => [
+        		'User-Agent' => 'trustmaster/1.0'
 			]
 		];
+		
+		
 		#print_r($options);
-		#echo "<pre>";
+		echo "<pre>";
+		echo $this->idpServer.$this->token_endpoint;
 		$response = $client->request('POST', $this->idpServer.$this->token_endpoint, $options);
 		
+		
+		print_r($response->getBody()->getContents());
+		die("___");
 		
 		#print_r($response->getStatusCode());
 		$resp =	json_decode($response->getBody()->getContents(),true);
@@ -242,6 +259,8 @@ class idpconn {
 		
 		
 	}
+	
+	
 	
 	
 	public function setLogger($logger){
@@ -287,9 +306,10 @@ class idpconn {
 	}
 
 	private function requestToken(){
+		
 		$client = new \GuzzleHttp\Client([
 			// Base URI is used with relative requests
-			'base_uri' => 'https://idp.trustmaster.nl',
+			'base_uri' => $this->idpServer,
 			// You can set any number of default request options.
 			'headers' => [
         		'User-Agent' => 'trustmaster/1.0',
@@ -302,10 +322,12 @@ class idpconn {
 			],
 			'http_errors' => false
 		]);
+		
+		
 		$response = $client->request('POST', $this->idpServer.'/token',[
-			'auth'=>[$this->client_id,$this->client_secret],
-			'json'=>['grant_type'=>'client_credentials']
-		]);
+				'auth'=>[$this->client_id,$this->client_secret],
+				'json'=>['grant_type'=>'client_credentials']
+			]);
 
 		$tokenData = json_decode($response->getBody()->getContents(),true);
 		#error_log($response->getStatusCode()." requestToken()" );
@@ -319,20 +341,20 @@ class idpconn {
 
 
 	public function get($path){
-		$options = [];
+		$options = ['headers' => ['User-Agent' => 'trustmaster/1.0']];
 		$response = $this->call('GET',$path,$options);
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
 	}
 	
 	public function post($path,$json=array()){
 		error_log("idpconn->post()");
-		$options = ['json' => $json];
+		$options = ['json' => $json,'headers' => ['User-Agent' => 'trustmaster/1.0']];
 		$response = $this->call('POST',$path,$options);
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
 	}
 	
 	public function put($path,$json=array()){
-		$options = ['json' => $json];
+		$options = ['json' => $json,'headers' => ['User-Agent' => 'trustmaster/1.0']];
 		$response = $this->call('PUT',$path,$options);
 		return array("code"=>$response->getStatusCode(),"data"=>$response->getBody()->getContents());
 	}
