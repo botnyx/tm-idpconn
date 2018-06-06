@@ -210,7 +210,38 @@ class idpconn {
 	}
 	
 	
-	
+	public function exchangeAuthCode($code){
+		// Exchange a received auth code for a token.
+		//curl -u TestClient:TestSecret https://api.mysite.com/token -d 'grant_type=authorization_code&code=xyz'
+		$client = new \GuzzleHttp\Client();
+		#echo "<pre>";
+		$options = [
+			'timeout' => 5,
+			'http_errors' => false,
+			'auth' => [$this->client_id, $this->client_secret],
+			'form_params' => [
+				'grant_type' => 'authorization_code',
+				'code' =>$code
+			]
+		];
+		#print_r($options);
+		#echo "<pre>";
+		$response = $client->request('POST', $this->idpServer.$this->token_endpoint, $options);
+		
+		
+		#print_r($response->getStatusCode());
+		$resp =	json_decode($response->getBody()->getContents(),true);
+		
+		#print_r($resp);
+		#die();
+		
+		$status = array('code'=>$response->getStatusCode() , 'data'=>$resp);
+		return $status;
+		
+		
+		
+		
+	}
 	
 	
 	public function setLogger($logger){
